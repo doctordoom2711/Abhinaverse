@@ -7,7 +7,6 @@
   --accent-1: #e5d9f6;
   --accent-2: #ffd2f3;
   --accent-3: #fcdca6;
-  --vh: 1vh;
 }
 
 * {
@@ -16,11 +15,11 @@
   box-sizing: border-box;
 }
 
-html,
 body {
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
+  font-family: "DM Sans";
+  width: 100%;
+
+  overflow-x: hidden;
 }
 
 h1 {
@@ -357,37 +356,4 @@ section {
   margin-right: 5px;
   display: inline-block;
   transform-origin: center;
-}
-
-/* Magnetic cursor dot */
-.cursor {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 20px;
-  height: 20px;
-  pointer-events: none;
-  border-radius: 50%;
-  background-color: #ff5c5c;
-  z-index: 9999;
-  transform: translate(-50%, -50%);
-  mix-blend-mode: difference;
-}
-
-/* Magnetic elements (targets) */
-.magnetic {
-  display: inline-block;
-  transition: transform 0.2s ease;
-  cursor: pointer;
-}
-
-@media (max-width: 768px) {
-  .services,
-  .cards {
-    height: calc(var(--vh) * 100);
-  }
-
-  .cursor {
-    display: none; /* optional: hide custom cursor on touch devices */
-  }
 }

@@ -1,36 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
   gsap.registerPlugin(ScrollTrigger);
 
-  // Lenis with mobile support
-  const lenis = new Lenis({
-    smoothTouch: true,
-    gestureOrientation: "vertical",
-    touchMultiplier: 1.5,
-  });
-
+  const lenis = new Lenis();
   lenis.on("scroll", ScrollTrigger.update);
   gsap.ticker.add((time) => {
     lenis.raf(time * 1000);
   });
   gsap.ticker.lagSmoothing(0);
-
-  // Fix viewport height issue on mobile
-  const setVh = () => {
-    document.documentElement.style.setProperty(
-      "--vh",
-      `${window.innerHeight * 0.01}px`
-    );
-  };
-  window.addEventListener("resize", setVh);
-  setVh();
-
-  // Refresh ScrollTrigger after load and resize/orientation changes
-  window.addEventListener("load", () =>
-    setTimeout(() => ScrollTrigger.refresh(), 100)
-  );
-  window.addEventListener("orientationchange", () =>
-    ScrollTrigger.refresh(true)
-  );
 
   const smoothStep = (p) => p * p * (3 - 2 * p);
 
@@ -47,7 +23,9 @@ document.addEventListener("DOMContentLoaded", () => {
         0.5,
         smoothStep(progress)
       );
-      gsap.set(".hero-cards", { opacity: heroCardsContainerOpacity });
+      gsap.set(".hero-cards", {
+        opacity: heroCardsContainerOpacity,
+      });
 
       ["#hero-card-1", "#hero-card-2", "#hero-card-3"].forEach(
         (cardId, index) => {
@@ -63,6 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
             "250%",
             smoothStep(cardProgress)
           );
+
           const scale = gsap.utils.interpolate(
             1,
             0.75,
@@ -79,7 +58,12 @@ document.addEventListener("DOMContentLoaded", () => {
             rotation = gsap.utils.interpolate(0, 15, smoothStep(cardProgress));
           }
 
-          gsap.set(cardId, { y, x, rotation, scale });
+          gsap.set(cardId, {
+            y: y,
+            x: x,
+            rotation: rotation,
+            scale: scale,
+          });
         }
       );
     },
@@ -88,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ScrollTrigger.create({
     trigger: ".services",
     start: "top top",
-    end: "400%",
+    end: `+=${window.innerHeight * 4}px`,
     pin: ".services",
     pinSpacing: true,
   });
@@ -96,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ScrollTrigger.create({
     trigger: ".services",
     start: "top top",
-    end: "400%",
+    end: `+=${window.innerHeight * 4}px`,
     onLeave: () => {
       const ServicesSection = document.querySelector(".services");
       const ServicesRect = ServicesSection.getBoundingClientRect();
@@ -124,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ScrollTrigger.create({
     trigger: ".services",
     start: "top bottom",
-    end: "400%",
+    end: `+=${window.innerHeight * 4}`,
     scrub: 1,
     onUpdate: (self) => {
       const progress = self.progress;
@@ -136,7 +120,9 @@ document.addEventListener("DOMContentLoaded", () => {
         smoothStep(headerProgress)
       );
 
-      gsap.set(".services-header", { y: headerY });
+      gsap.set(".services-header", {
+        y: headerY,
+      });
 
       ["#card-1", "#card-2", "#card-3"].forEach((cardId, index) => {
         const delay = index * 0.5;
@@ -150,44 +136,56 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let y;
         if (cardProgress < 0.4) {
+          const normalizedProgress = cardProgress / 0.4;
           y = gsap.utils.interpolate(
             "-100%",
             "50%",
-            smoothStep(cardProgress / 0.4)
+            smoothStep(normalizedProgress)
           );
         } else if (cardProgress < 0.6) {
+          const normalizedProgress = (cardProgress - 0.4) / 0.2;
           y = gsap.utils.interpolate(
             "50%",
             "0%",
-            smoothStep((cardProgress - 0.4) / 0.2)
+            smoothStep(normalizedProgress)
           );
         } else {
           y = "0%";
         }
 
-        let scale = 1;
+        let scale;
         if (cardProgress < 0.4) {
+          const normalizedProgress = cardProgress / 0.4;
           scale = gsap.utils.interpolate(
             0.25,
             0.75,
-            smoothStep(cardProgress / 0.4)
+            smoothStep(normalizedProgress)
           );
         } else if (cardProgress < 0.6) {
+          const normalizedProgress = (cardProgress - 0.4) / 0.2;
           scale = gsap.utils.interpolate(
             0.75,
             1,
-            smoothStep((cardProgress - 0.4) / 0.2)
+            smoothStep(normalizedProgress)
           );
+        } else {
+          scale = 1;
         }
 
-        let opacity = cardProgress < 0.2 ? smoothStep(cardProgress / 0.2) : 1;
+        let opacity;
+        if (cardProgress < 0.2) {
+          const normalizedProgress = cardProgress / 0.2;
+          opacity = smoothStep(normalizedProgress);
+        } else {
+          opacity = 1;
+        }
 
         let x, rotate, rotationY;
         if (cardProgress < 0.6) {
           x = index === 0 ? "100%" : index === 1 ? "0%" : "-100%";
           rotate = index === 0 ? -5 : index === 1 ? 0 : 5;
           rotationY = 0;
-        } else {
+        } else if (cardProgress < 1) {
           const normalizedProgress = (cardProgress - 0.6) / 0.4;
           x = gsap.utils.interpolate(
             index === 0 ? "100%" : index === 1 ? "0%" : "-100%",
@@ -200,51 +198,62 @@ document.addEventListener("DOMContentLoaded", () => {
             smoothStep(normalizedProgress)
           );
           rotationY = smoothStep(normalizedProgress) * 180;
+        } else {
+          x = "0%";
+          rotate = 0;
+          rotationY = 180;
         }
 
-        gsap.set(cardId, { opacity, y, x, rotate, scale });
-        gsap.set(innerCard, { rotationY });
+        gsap.set(cardId, {
+          opacity: opacity,
+          y: y,
+          x: x,
+          rotate: rotate,
+          scale: scale,
+        });
+
+        gsap.set(innerCard, {
+          rotationY: rotationY,
+        });
       });
     },
   });
 
-  // SVG Eye Tracking with touch support
   const svg = document.querySelector("#svg");
   const mouse = svg.createSVGPoint();
+
   const leftEye = CreateEye("#left-eye");
   const rightEye = CreateEye("#right-eye");
+
   let requestId = null;
+
+  window.addEventListener("mousemove", onMouseMove);
 
   function onFrame() {
     let point = mouse.matrixTransform(svg.getScreenCTM().inverse());
+
     leftEye.rotateTo(point);
     rightEye.rotateTo(point);
+
     requestId = null;
   }
 
   function onMouseMove(event) {
     mouse.x = event.clientX;
     mouse.y = event.clientY;
-    if (!requestId) requestId = requestAnimationFrame(onFrame);
-  }
 
-  // Support both mouse and touch
-  window.addEventListener("mousemove", onMouseMove);
-  window.addEventListener(
-    "touchmove",
-    (e) => {
-      if (e.touches.length > 0) {
-        mouse.x = e.touches[0].clientX;
-        mouse.y = e.touches[0].clientY;
-        if (!requestId) requestId = requestAnimationFrame(onFrame);
-      }
-    },
-    { passive: true }
-  );
+    if (!requestId) {
+      requestId = requestAnimationFrame(onFrame);
+    }
+  }
 
   function CreateEye(selector) {
     const element = document.querySelector(selector);
-    gsap.set(element, { transformOrigin: "center" });
+
+    gsap.set(element, {
+      transformOrigin: "center",
+    });
+
     let bbox = element.getBBox();
     let centerX = bbox.x + bbox.width / 2;
     let centery = bbox.y + bbox.height / 2;
@@ -252,17 +261,24 @@ document.addEventListener("DOMContentLoaded", () => {
     function rotateTo(point) {
       let dx = point.x - centerX;
       let dy = point.y - centery;
+
       let angle = Math.atan2(dy, dx);
-      gsap.to(element, { duration: 0.3, rotation: angle + "_rad_short" });
+
+      gsap.to(element, 0.3, {
+        rotation: angle + "_rad_short",
+      });
     }
 
-    return { element, rotateTo };
+    return {
+      element,
+      rotateTo,
+    };
   }
 
-  // Text hover/touch bounce
   const texts = document.querySelectorAll(".text");
+
   texts.forEach((text) => {
-    const animateIn = () => {
+    text.addEventListener("mouseenter", () => {
       gsap.to(text, {
         y: -10,
         scale: 1.05,
@@ -270,8 +286,9 @@ document.addEventListener("DOMContentLoaded", () => {
         duration: 0.3,
         ease: "power2.out",
       });
-    };
-    const animateOut = () => {
+    });
+
+    text.addEventListener("mouseleave", () => {
       gsap.to(text, {
         y: 0,
         scale: 1,
@@ -279,58 +296,57 @@ document.addEventListener("DOMContentLoaded", () => {
         duration: 0.3,
         ease: "power2.out",
       });
-    };
-
-    text.addEventListener("mouseenter", animateIn);
-    text.addEventListener("mouseleave", animateOut);
-    text.addEventListener("touchstart", animateIn);
-    text.addEventListener("touchend", animateOut);
+    });
   });
 
-  // Cursor trail
   const cursor = document.querySelector(".cursor");
-  let mouseX = 0,
-    mouseY = 0,
-    posX = 0,
-    posY = 0;
+
+  let mouseX = 0;
+  let mouseY = 0;
+
+  let posX = 0;
+  let posY = 0;
+
+  // Cursor trail loop
   gsap.ticker.add(() => {
     posX += (mouseX - posX) * 0.15;
     posY += (mouseY - posY) * 0.15;
-    gsap.set(cursor, { x: posX, y: posY });
+    gsap.set(cursor, {
+      x: posX,
+      y: posY,
+    });
   });
 
+  // Update mouse coordinates
   window.addEventListener("mousemove", (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
   });
 
-  // Magnetic hover effect
+  // Magnetic effect
   const magneticItems = document.querySelectorAll(".magnetic");
+
   magneticItems.forEach((el) => {
-    const move = (e) => {
-      const rect = el.getBoundingClientRect();
-      const x =
-        (e.clientX || e.touches?.[0]?.clientX || 0) -
-        rect.left -
-        rect.width / 2;
-      const y =
-        (e.clientY || e.touches?.[0]?.clientY || 0) -
-        rect.top -
-        rect.height / 2;
-      gsap.to(el, {
+    el.addEventListener("mousemove", function (e) {
+      const rect = this.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+
+      gsap.to(this, {
         x: x * 0.3,
         y: y * 0.3,
         ease: "power2.out",
         duration: 0.4,
       });
-    };
-    el.addEventListener("mousemove", move);
-    el.addEventListener("mouseleave", () =>
-      gsap.to(el, { x: 0, y: 0, ease: "power2.out", duration: 0.4 })
-    );
-    el.addEventListener("touchmove", move);
-    el.addEventListener("touchend", () =>
-      gsap.to(el, { x: 0, y: 0, ease: "power2.out", duration: 0.4 })
-    );
+    });
+
+    el.addEventListener("mouseleave", function () {
+      gsap.to(this, {
+        x: 0,
+        y: 0,
+        ease: "power2.out",
+        duration: 0.4,
+      });
+    });
   });
 });
