@@ -7,6 +7,7 @@
   --accent-1: #e5d9f6;
   --accent-2: #ffd2f3;
   --accent-3: #fcdca6;
+  --vh: 1vh;
 }
 
 * {
@@ -15,11 +16,11 @@
   box-sizing: border-box;
 }
 
+html,
 body {
-  font-family: "DM Sans";
-  width: 100%;
-
-  overflow-x: hidden;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
 }
 
 h1 {
@@ -378,4 +379,15 @@ section {
   display: inline-block;
   transition: transform 0.2s ease;
   cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .services,
+  .cards {
+    height: calc(var(--vh) * 100);
+  }
+
+  .cursor {
+    display: none; /* optional: hide custom cursor on touch devices */
+  }
 }
